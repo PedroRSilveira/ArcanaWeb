@@ -1,0 +1,1430 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arcana 🔮 — a linguagem dos feiticeiros</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=Cinzel:wght@400;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            void:     "#0a0015",
+            grimoire: "#16002e",
+            arcane:   "#2d0a5e",
+            rune:     "#5e2bb5",
+            aura:     "#9b59d6",
+            gold:     "#ffd700",
+            goldDark: "#c4a000",
+            scroll:   "#f0e6ff",
+            parch:    "#ffe9b8",
+            mist:     "#c4a8e8",
+          },
+          fontFamily: {
+            pixel: ['"Press Start 2P"', "monospace"],
+            tome:  ["Cinzel", "serif"],
+            corpo: ["Nunito", "system-ui", "sans-serif"],
+            rune:  ['"VT323"', "monospace"],
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    :root { --gold: #ffd700; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Nunito', system-ui, sans-serif;
+      color: #f0e6ff;
+      background-color: #0a0015;
+      background-image:
+        radial-gradient(ellipse at 20% 20%, rgba(94,43,181,.25) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 80%, rgba(45,10,94,.35) 0%, transparent 50%),
+        linear-gradient(to bottom, #0a0015 0%, #16002e 60%, #0a0015 100%);
+      min-height: 100vh;
+    }
+
+    /* ── Painel grimório (escuro com bordas douradas) ── */
+    .grim {
+      background: linear-gradient(135deg, #1a0035 0%, #0e0022 100%);
+      border-radius: 6px;
+      box-shadow:
+        0 0 0 2px #ffd700,
+        0 0 0 4px #3d1a70,
+        0 0 0 6px #ffd700,
+        inset 0 0 0 2px rgba(155,89,214,.3),
+        0 8px 32px rgba(0,0,0,.6);
+      color: #f0e6ff;
+    }
+    .scroll-parch {
+      background: linear-gradient(135deg, #f5edff 0%, #e8d9ff 100%);
+      border-radius: 6px;
+      box-shadow:
+        0 0 0 2px #ffd700,
+        0 0 0 4px #7c4dbb,
+        0 0 0 6px #ffd700;
+      color: #16002e;
+    }
+
+    /* ── Botões ── */
+    .spell-btn {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 10px;
+      line-height: 1.4;
+      padding: 12px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      border: 2px solid #ffd700;
+      box-shadow: 0 4px 0 #806000, 0 4px 0 4px rgba(0,0,0,.3);
+      transition: transform .05s, box-shadow .05s, filter .1s;
+      user-select: none;
+      text-shadow: 1px 1px 0 rgba(0,0,0,.5);
+    }
+    .spell-btn:hover { filter: brightness(1.1); }
+    .spell-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #806000; }
+    .btn-purple { background: linear-gradient(135deg,#7b2fff,#5e2bb5); color: #fff; }
+    .btn-gold   { background: linear-gradient(135deg,#ffd700,#c4a000); color: #16002e; }
+    .btn-dark   { background: linear-gradient(135deg,#3d1a70,#16002e); color: #ffd700; }
+    .btn-teal   { background: linear-gradient(135deg,#0a8a80,#065550); color: #a0ffee; }
+
+    /* ── Abas de nav ── */
+    .nav-rune {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 9px;
+      color: #c4a8e8;
+      padding: 9px 11px;
+      border: 2px solid #5e2bb5;
+      border-radius: 4px;
+      background: rgba(45,10,94,.6);
+      box-shadow: inset 0 0 0 1px rgba(155,89,214,.2), 0 2px 0 #16002e;
+      cursor: pointer;
+      transition: all .1s;
+      white-space: normal;
+      line-height: 1.5;
+      word-break: break-word;
+    }
+    .nav-rune:hover { background: rgba(94,43,181,.5); color: #f0e6ff; }
+    .nav-rune.active {
+      background: linear-gradient(135deg,#ffd700,#c4a000);
+      color: #16002e;
+      border-color: #ffd700;
+      box-shadow: 0 0 8px rgba(255,215,0,.4);
+    }
+
+    /* ── Editor / console ── */
+    .editor-arcana, .console-arcana {
+      font-family: 'VT323', monospace;
+      font-size: 20px;
+      line-height: 1.3;
+    }
+    .editor-arcana {
+      width: 100%;
+      min-height: 340px;
+      background: #060010;
+      color: #d4b8ff;
+      padding: 14px 16px;
+      border: none;
+      border-radius: 4px;
+      box-shadow: inset 0 0 0 2px #5e2bb5, 0 0 12px rgba(94,43,181,.3);
+      resize: vertical;
+      outline: none;
+      tab-size: 4;
+    }
+    .editor-arcana:focus { box-shadow: inset 0 0 0 2px #ffd700, 0 0 16px rgba(255,215,0,.2); }
+    .console-arcana {
+      width: 100%;
+      min-height: 340px;
+      background: #05000f;
+      color: #d4b8ff;
+      padding: 14px 16px;
+      border-radius: 4px;
+      box-shadow: inset 0 0 0 2px #16002e, 0 0 12px rgba(0,0,0,.5);
+      white-space: pre-wrap;
+      overflow-y: auto;
+    }
+    .console-arcana .c-ok   { color: #a8ff78; }
+    .console-arcana .c-err  { color: #ff8a8a; }
+    .console-arcana .c-dim  { color: #7855b0; }
+    .console-arcana .c-tok  { color: #ffcc66; }
+
+    /* ── Code display ── */
+    .arc-code {
+      display: block;
+      background: #060010;
+      color: #d4b8ff;
+      padding: 14px 16px;
+      border-radius: 4px;
+      box-shadow: inset 0 0 0 2px #5e2bb5;
+      white-space: pre;
+      overflow-x: auto;
+      font-family: 'VT323', monospace;
+      font-size: 19px;
+      line-height: 1.3;
+    }
+
+    .titulo-arcana {
+      font-family: 'Press Start 2P', monospace;
+      text-shadow: 0 0 20px rgba(155,89,214,.8), 2px 2px 0 rgba(0,0,0,.6);
+      line-height: 1.6;
+    }
+    .runic {
+      font-family: 'Cinzel', serif;
+      letter-spacing: .05em;
+    }
+
+    .hidden-sec { display: none; }
+
+    /* ── Estrelas de fundo ── */
+    .stars {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden;
+    }
+    .star {
+      position: absolute;
+      background: white;
+      border-radius: 50%;
+      animation: twinkle var(--d,3s) ease-in-out infinite;
+      opacity: 0;
+    }
+    @keyframes twinkle {
+      0%,100% { opacity:0; transform:scale(.5); }
+      50%      { opacity:var(--o,.8); transform:scale(1); }
+    }
+
+    /* ── Mascote flutuando ── */
+    .mascote-wizard {
+      width: clamp(200px,50vw,360px);
+      margin: 0 auto 8px;
+      display: block;
+    }
+
+    /* ── Chip / badge ── */
+    .rune-chip {
+      font-family: 'Press Start 2P', monospace;
+      font-size: 8px;
+      background: rgba(94,43,181,.4);
+      color: #c4a8e8;
+      padding: 4px 8px;
+      border: 1px solid #5e2bb5;
+      border-radius: 3px;
+    }
+    a.link { color:#a78bfa; font-weight:700; text-decoration:underline; }
+
+    /* scrollbar ── */
+    .console-arcana::-webkit-scrollbar, .editor-arcana::-webkit-scrollbar { width:8px; }
+    .console-arcana::-webkit-scrollbar-thumb, .editor-arcana::-webkit-scrollbar-thumb {
+      background:#3d1a70; border-radius:4px;
+    }
+
+    /* main content above stars */
+    header, main, footer { position: relative; z-index: 1; }
+  </style>
+</head>
+
+<body class="font-corpo">
+
+<!-- ── Fundo estrelado ── -->
+<div class="stars" id="stars-bg" aria-hidden="true"></div>
+
+<!-- ══════════════ HEADER ══════════════ -->
+<header class="sticky top-0 z-50 grim px-4 py-3 m-2">
+  <div class="max-w-6xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+    <h1 class="titulo-arcana text-gold text-base md:text-xl">Arcana <span aria-hidden="true">🔮</span></h1>
+    <nav class="flex gap-2 flex-wrap" aria-label="Navegação principal">
+      <button class="nav-rune active" data-sec="inicio">🏰 Início</button>
+      <button class="nav-rune" data-sec="docs">📜 Documentação</button>
+      <button class="nav-rune" data-sec="play">✨ Grimório</button>
+    </nav>
+  </div>
+</header>
+
+<main class="max-w-6xl mx-auto px-2 md:px-4 pb-16">
+
+<!-- ══════════════ INÍCIO ══════════════ -->
+<section id="sec-inicio">
+
+  <div class="scroll-parch p-6 md:p-10 mt-4 text-center">
+    <img src="magos.png" alt="Feiticeiros em pixel art com computador mágico" class="mascote-wizard" style="image-rendering:pixelated">
+    <p class="text-sm mb-4" style="font-family:'Cinzel',serif;color:#3d1a70;letter-spacing:.05em;font-weight:700">Criado por Pedro Silveira e Vitor Antônio</p>
+    <h2 class="titulo-arcana text-arcane text-sm md:text-xl mb-4">A linguagem dos feiticeiros</h2>
+    <p class="text-lg md:text-xl max-w-2xl mx-auto leading-relaxed text-arcane">
+      <strong>Arcana</strong> é uma linguagem de programação de brinquedo criada na disciplina
+      de Linguagens Formais e Autômatos da UFG. Você escreve <em>foresee</em> em vez de <em>if</em>,
+      <em>chant</em> em vez de <em>for</em>, e <em>manifest</em> em vez de <em>return</em>
+      — e o compilador transpila para C ou Assembly x86-64. 🔮
+    </p>
+    <div class="flex flex-wrap gap-4 justify-center mt-7">
+      <button class="spell-btn btn-purple" data-sec="docs">📜 Ler a Documentação</button>
+      <button class="spell-btn btn-gold"   data-sec="play">✨ Abrir o Grimório</button>
+      <a href="https://github.com/PedroRSilveira/Arcana" target="_blank" rel="noopener noreferrer" class="spell-btn btn-dark" style="text-decoration:none;display:inline-block">🐙 Ver no GitHub</a>
+    </div>
+  </div>
+
+  <div class="grid md:grid-cols-3 gap-4 mt-4">
+    <div class="grim p-5">
+      <h3 class="titulo-arcana text-gold" style="font-size:10px;margin-bottom:.75rem">💎 Tipos Arcanos</h3>
+      <p class="text-mist leading-snug" style="font-size:15px">
+        <code>essence</code> · <code>aether</code> · <code>crystal</code><br>
+        <code>fate</code> · <code>glyph</code> · <code>incantation</code>
+      </p>
+    </div>
+    <div class="grim p-5">
+      <h3 class="titulo-arcana text-gold" style="font-size:10px;margin-bottom:.75rem">⚡ Controle Mágico</h3>
+      <p class="text-mist leading-snug" style="font-size:15px">
+        <code>foresee</code> · <code>elsewise</code> · <code>destiny</code><br>
+        <code>chant</code> · <code>sustain</code> · <code>invoke</code>
+      </p>
+    </div>
+    <div class="grim p-5">
+      <h3 class="titulo-arcana text-gold" style="font-size:10px;margin-bottom:.75rem">🏛️ Estruturas</h3>
+      <p class="text-mist leading-snug" style="font-size:15px">
+        <code>inventory</code> · <code>sigils</code> · <code>realm</code><br>
+        <code>codex</code> · <code>grimoire</code>
+      </p>
+    </div>
+  </div>
+
+  <div class="grim p-5 md:p-6 mt-4">
+    <h3 class="titulo-arcana text-gold mb-4" style="font-size:10px">🔮 Uma espiada</h3>
+    <code class="arc-code" id="hero-code"></code>
+  </div>
+
+  <div class="grim p-5 mt-4">
+    <h3 class="titulo-arcana text-gold mb-4" style="font-size:10px">⚙️ Como funciona</h3>
+    <div class="grid md:grid-cols-4 gap-3">
+      <div class="text-center p-3" style="border:1px solid rgba(94,43,181,.4);border-radius:6px">
+        <div style="font-size:24px;margin-bottom:6px">📝</div>
+        <div class="titulo-arcana text-aura" style="font-size:8px">Léxico</div>
+        <p class="text-mist mt-2" style="font-size:13px">Código → Tokens via regex + DFA</p>
+      </div>
+      <div class="text-center p-3" style="border:1px solid rgba(94,43,181,.4);border-radius:6px">
+        <div style="font-size:24px;margin-bottom:6px">🌳</div>
+        <div class="titulo-arcana text-aura" style="font-size:8px">Sintático</div>
+        <p class="text-mist mt-2" style="font-size:13px">Tokens → AST LALR(1)</p>
+      </div>
+      <div class="text-center p-3" style="border:1px solid rgba(94,43,181,.4);border-radius:6px">
+        <div style="font-size:24px;margin-bottom:6px">🔍</div>
+        <div class="titulo-arcana text-aura" style="font-size:8px">Semântico</div>
+        <p class="text-mist mt-2" style="font-size:13px">Tipos · Escopos · Visitor</p>
+      </div>
+      <div class="text-center p-3" style="border:1px solid rgba(94,43,181,.4);border-radius:6px">
+        <div style="font-size:24px;margin-bottom:6px">⚡</div>
+        <div class="titulo-arcana text-aura" style="font-size:8px">Geração</div>
+        <p class="text-mist mt-2" style="font-size:13px">AST → C → gcc → ELF</p>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<!-- ══════════════ DOCUMENTAÇÃO ══════════════ -->
+<section id="sec-docs" class="hidden-sec">
+  <div class="grid md:grid-cols-[220px_1fr] gap-4 mt-4">
+    <aside class="grim p-4 md:sticky md:top-28 self-start">
+      <h3 class="titulo-arcana text-gold mb-4" style="font-size:9px">📚 Tópicos</h3>
+      <ul class="flex flex-col gap-2" id="doc-menu"></ul>
+    </aside>
+    <div class="scroll-parch p-5 md:p-7" id="doc-conteudo"></div>
+  </div>
+</section>
+
+<!-- ══════════════ GRIMÓRIO (PLAYGROUND) ══════════════ -->
+<section id="sec-play" class="hidden-sec">
+  <div class="grim p-5 md:p-7 mt-4 text-center">
+    <h2 class="titulo-arcana text-gold mb-2" style="font-size:13px">✨ Grimório de Compilação</h2>
+    <p class="text-mist text-lg">Escreva seu feitiço em Arcana e veja o resultado. O grimório interpreta no próprio navegador.</p>
+    <p class="text-sm mt-1" style="color:#7855b0">Para compilar para C ou Assembly, use o compilador Python local.</p>
+  </div>
+
+  <div class="grid lg:grid-cols-2 gap-4 mt-4">
+    <div class="grim p-4">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="titulo-arcana text-gold" style="font-size:9px">📝 Editor Arcano</h3>
+        <div class="flex gap-2">
+          <button id="btn-exemplo" class="nav-rune">🔄 Exemplo</button>
+          <button id="btn-limpar"  class="nav-rune">🧹 Limpar</button>
+        </div>
+      </div>
+      <textarea id="editor" class="editor-arcana" spellcheck="false" aria-label="Editor Arcana"></textarea>
+      <h3 class="titulo-arcana text-gold mt-4 mb-2" style="font-size:9px">⌨️ Entrada (divine)</h3>
+      <textarea id="stdin-area" class="editor-arcana" style="min-height:60px"
+        placeholder="valores para divine (separados por espaço ou linha)"></textarea>
+      <div class="flex flex-wrap gap-3 mt-4">
+        <button id="btn-rodar"  class="spell-btn btn-purple">▶ Lançar Feitiço ✨</button>
+        <button id="btn-tokens" class="spell-btn btn-dark">🔤 Ver Tokens</button>
+      </div>
+    </div>
+    <div class="grim p-4">
+      <h3 class="titulo-arcana text-gold mb-3" style="font-size:9px">🗨️ Cristal de Saída</h3>
+      <div id="console" class="console-arcana" aria-live="polite">
+        <span class="c-dim">O cristal aguarda um feitiço... clique em <b>Lançar Feitiço</b> para invocar. 🔮</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="grim mx-2 mb-3 px-4 py-3 text-center">
+  <p style="font-family:'VT323',monospace;font-size:20px;color:#c4a8e8">
+    Arcana 🔮 — projeto de Linguagens Formais e Autômatos · UFG · feito com magia e Python 🌟<br>Criação de Pedro Silveira e Vitor Antônio
+  </p>
+</footer>
+
+<!-- ══════════════════════════════════════════
+     MOTOR ARCANA — Lexer + Parser + Interpreter
+     Roda no navegador sem backend Python.
+     API: runArcana(source, stdin) → {ok, saida, erro}
+══════════════════════════════════════════ -->
+<script>
+(function(global){
+"use strict";
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  ERROS
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+class ArcanaError extends Error {
+  constructor(fase, msg, linha=0) {
+    super(`[${fase}] linha ${linha}: ${msg}`);
+    this.fase = fase; this.linha = linha;
+  }
+}
+const LexErr  = (m,l)=> new ArcanaError("léxico",    m, l);
+const SynErr  = (m,l)=> new ArcanaError("sintático", m, l);
+const SemErr  = (m,l)=> new ArcanaError("semântico", m, l);
+const RunErr  = (m,l)=> new ArcanaError("execução",  m, l);
+
+// sinais de controle
+class ReturnSignal  { constructor(v){ this.v=v; } }
+class BreakSignal   {}
+class ContinueSignal{}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  LÉXICO
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const KW = {
+  ritual:true,spell:true,binding:true,grimoire:true,
+  reveal:true,divine:true,
+  foresee:true,elsewise:true,destiny:true,path:true,otherwise:true,
+  chant:true,from:true,to:true,step:true,in:true,
+  sustain:true,invoke:true,
+  dispel:true,recast:true,teleport:true,manifest:true,
+  true:true,false:true,
+  essence:true,aether:true,crystal:true,fate:true,glyph:true,incantation:true,
+  inventory:true,sigils:true,realm:true,codex:true,
+};
+
+function lex(src) {
+  const toks = [];
+  let i=0, line=1;
+  while(i<src.length){
+    // whitespace
+    if(/\s/.test(src[i])){ if(src[i]==='\n')line++; i++; continue; }
+    // line comment
+    if(src[i]==='#'){ while(i<src.length&&src[i]!=='\n')i++; continue; }
+    // block comment ~( ... )~
+    if(src.slice(i,i+2)==='~('){ 
+      let j=i+2; while(j<src.length&&src.slice(j,j+2)!==')~'){ if(src[j]==='\n')line++; j++; } 
+      i=j+2; continue; 
+    }
+    // string literal
+    if(src[i]==='"'){
+      let j=i+1,s='';
+      while(j<src.length&&src[j]!=='"'){
+        if(src[j]==='\\'){j++;s+=({n:'\n',t:'\t','\\':'\\','"':'"'}[src[j]]||src[j]);j++;}
+        else s+=src[j++];
+      }
+      toks.push({t:'STRING',v:s,l:line}); i=j+1; continue;
+    }
+    // char literal
+    if(src[i]==="'"){
+      let c=src[i+1];
+      if(c==='\\'){ c=({n:'\n',t:'\t','\\':'\\','\'':'\''}[src[i+2]]||src[i+2]); i+=4; }
+      else i+=3;
+      toks.push({t:'CHAR',v:c,l:line}); continue;
+    }
+    // numbers
+    let nm=src.slice(i).match(/^(\d+)q(\d+)/);
+    if(nm){ toks.push({t:'FIXED',v:[+nm[1],+nm[2]],l:line}); i+=nm[0].length; continue; }
+    nm=src.slice(i).match(/^\d+\.\d+/);
+    if(nm){ toks.push({t:'FLOAT',v:parseFloat(nm[0]),l:line}); i+=nm[0].length; continue; }
+    nm=src.slice(i).match(/^\d+/);
+    if(nm){ toks.push({t:'INT',v:+nm[0],l:line}); i+=nm[0].length; continue; }
+    // identifiers / keywords
+    nm=src.slice(i).match(/^[a-zA-Z_]\w*/);
+    if(nm){ 
+      const w=nm[0];
+      toks.push({t: KW[w]?w.toUpperCase():( w==='true'?'TRUE':w==='false'?'FALSE':'ID'), v:w, l:line});
+      i+=w.length; continue;
+    }
+    // two-char ops
+    const two=src.slice(i,i+2);
+    const TWO={'==':'EQ','!=':'NEQ','<=':'LEQ','>=':'GEQ','&&':'AND','||':'OR','->':'ARROW'};
+    if(TWO[two]){ toks.push({t:TWO[two],v:two,l:line}); i+=2; continue; }
+    // single-char
+    const ONE={'+':'PLUS','-':'MINUS','*':'TIMES','/':'SLASH','%':'MOD','<':'LT','>':'GT',
+               '!':'NOT','=':'ASSIGN','?':'QUEST',':':'COLON','(':'LP',')':'RP',
+               '{':'LB','}':'RB','[':'LSQ',']':'RSQ',',':'COMMA',';':'SEMI','.' :'DOT'};
+    if(ONE[src[i]]){ toks.push({t:ONE[src[i]],v:src[i],l:line}); i++; continue; }
+    throw LexErr(`caractere inválido '${src[i]}'`, line);
+  }
+  toks.push({t:'EOF',v:'',l:line});
+  return toks;
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  PARSER (Recursive Descent)
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+class Parser {
+  constructor(toks){ this.t=toks; this.i=0; }
+  cur(){ return this.t[this.i]; }
+  peek(n=1){ return this.t[Math.min(this.i+n,this.t.length-1)]; }
+  check(type){ return this.cur().t===type; }
+  match(...types){ if(types.includes(this.cur().t)){ this.i++; return this.t[this.i-1]; } return null; }
+  expect(type,msg){ const tk=this.match(type); if(!tk) throw SynErr(`esperado ${msg}, encontrado '${this.cur().v}'`,this.cur().l); return tk; }
+
+  parse(){
+    const decls=[]; const l=this.cur().l;
+    while(!this.check('EOF')&&!this.check('RITUAL')){
+      if(this.check('GRIMOIRE')) decls.push(this.pGrimoire());
+      else if(this.check('SPELL')) decls.push(this.pSpell());
+      else throw SynErr(`esperado grimoire ou spell, encontrado '${this.cur().v}'`,this.cur().l);
+    }
+    const ritual=this.pRitual();
+    return {k:'Program',decls,ritual,l};
+  }
+
+  pRitual(){
+    const l=this.expect('RITUAL','ritual').l;
+    this.expect('LB','{');
+    const body=this.pStmtList();
+    this.expect('RB','}');
+    return {k:'Ritual',body,l};
+  }
+
+  pGrimoire(){
+    const l=this.expect('GRIMOIRE','grimoire').l;
+    const name=this.expect('ID','nome').v;
+    this.expect('LB','{');
+    const fields=[],spells=[];
+    while(!this.check('RB')&&!this.check('EOF')){
+      if(this.check('BINDING')){ fields.push(this.pBinding()); }
+      else if(this.check('SPELL')){ spells.push(this.pSpell()); }
+      else throw SynErr(`esperado binding ou spell dentro de grimoire`,this.cur().l);
+    }
+    this.expect('RB','}');
+    return {k:'Grimoire',name,fields,spells,l};
+  }
+
+  pSpell(){
+    const l=this.expect('SPELL','spell').l;
+    const name=this.expect('ID','nome').v;
+    this.expect('LP','(');
+    const params=[];
+    while(!this.check('RP')&&!this.check('EOF')){
+      const pn=this.expect('ID','parâmetro').v;
+      this.expect('COLON',':');
+      const pt=this.pType();
+      params.push({name:pn,type:pt});
+      if(!this.match('COMMA')) break;
+    }
+    this.expect('RP',')');
+    let retType=null;
+    if(this.match('ARROW')) retType=this.pType();
+    this.expect('LB','{');
+    const body=this.pStmtList();
+    this.expect('RB','}');
+    return {k:'Spell',name,params,retType,body,l};
+  }
+
+  pType(){
+    const cur=this.cur();
+    const primitives=['ESSENCE','AETHER','CRYSTAL','FATE','GLYPH','INCANTATION'];
+    if(primitives.includes(cur.t)){ this.i++; return {k:'PrimType',name:cur.v,l:cur.l}; }
+    if(this.check('INVENTORY')){ this.i++; this.expect('LSQ','['); const el=this.pType(); this.expect('RSQ',']'); return {k:'InvType',el,l:cur.l}; }
+    if(this.check('SIGILS'))   { this.i++; this.expect('LSQ','['); const el=this.pType(); this.expect('RSQ',']'); return {k:'SigType',el,l:cur.l}; }
+    if(this.check('REALM'))    { this.i++; this.expect('LSQ','['); const el=this.pType(); this.expect('RSQ',']'); return {k:'RlmType',el,l:cur.l}; }
+    if(this.check('CODEX'))    { this.i++; this.expect('LSQ','['); const k=this.pType(); this.expect('COMMA',','); const v=this.pType(); this.expect('RSQ',']'); return {k:'CodType',ktype:k,vtype:v,l:cur.l}; }
+    if(this.check('ID'))       { const n=this.cur().v; this.i++; return {k:'NamedType',name:n,l:cur.l}; }
+    throw SynErr(`tipo esperado, encontrado '${cur.v}'`,cur.l);
+  }
+
+  pStmtList(){
+    const stmts=[];
+    const ends=['RB','EOF','RITUAL'];
+    while(!ends.includes(this.cur().t)) stmts.push(this.pStmt());
+    return stmts;
+  }
+
+  pStmt(){
+    const l=this.cur().l;
+    if(this.check('BINDING'))  return this.pBinding();
+    if(this.check('REVEAL'))   return this.pReveal();
+    if(this.check('DIVINE'))   return this.pDivine();
+    if(this.check('FORESEE'))  return this.pForesee();
+    if(this.check('DESTINY'))  return this.pDestiny();
+    if(this.check('CHANT'))    return this.pChant();
+    if(this.check('SUSTAIN'))  return this.pSustain();
+    if(this.check('INVOKE'))   return this.pInvoke();
+    if(this.check('DISPEL'))   { this.i++; this.expect('SEMI',';'); return {k:'Dispel',l}; }
+    if(this.check('RECAST'))   { this.i++; this.expect('SEMI',';'); return {k:'Recast',l}; }
+    if(this.check('MANIFEST')) { this.i++; const v=this.check('SEMI')?null:this.pExpr(); this.expect('SEMI',';'); return {k:'Manifest',val:v,l}; }
+    if(this.check('TELEPORT')) { this.i++; const lbl=this.expect('ID','label').v; this.expect('SEMI',';'); return {k:'Teleport',label:lbl,l}; }
+    // label: ID COLON
+    if(this.check('ID')&&this.peek().t==='COLON'){ const nm=this.cur().v; this.i+=2; return {k:'Label',name:nm,l}; }
+    // assignment or call
+    const expr=this.pExpr();
+    if(this.match('ASSIGN')){
+      const val=this.pExpr();
+      this.expect('SEMI',';');
+      return {k:'Assign',target:expr,val,l};
+    }
+    this.expect('SEMI',';');
+    return {k:'ExprStmt',expr,l};
+  }
+
+  pBinding(){
+    const l=this.expect('BINDING','binding').l;
+    const name=this.expect('ID','nome').v;
+    this.expect('COLON',':');
+    const type=this.pType();
+    let init=null;
+    if(this.match('ASSIGN')) init=this.pExpr();
+    this.expect('SEMI',';');
+    return {k:'Binding',name,type,init,l};
+  }
+
+  pReveal(){
+    const l=this.expect('REVEAL','reveal').l;
+    this.expect('LP','(');
+    const args=[];
+    while(!this.check('RP')&&!this.check('EOF')){ args.push(this.pExpr()); if(!this.match('COMMA'))break; }
+    this.expect('RP',')');
+    this.expect('SEMI',';');
+    return {k:'Reveal',args,l};
+  }
+
+  pDivine(){
+    const l=this.expect('DIVINE','divine').l;
+    const name=this.expect('ID','nome').v;
+    this.expect('SEMI',';');
+    return {k:'Divine',name,l};
+  }
+
+  pForesee(){
+    const l=this.expect('FORESEE','foresee').l;
+    const cond=this.pExpr();
+    this.expect('LB','{'); const then=this.pStmtList(); this.expect('RB','}');
+    let els=null;
+    if(this.match('ELSEWISE')){
+      if(this.check('FORESEE')) els=[this.pForesee()];
+      else { this.expect('LB','{'); els=this.pStmtList(); this.expect('RB','}'); }
+    }
+    return {k:'Foresee',cond,then,els,l};
+  }
+
+  pDestiny(){
+    const l=this.expect('DESTINY','destiny').l;
+    const expr=this.pExpr();
+    this.expect('LB','{');
+    const paths=[];
+    while(this.check('PATH')){
+      this.i++;
+      const val=this.pExpr();
+      this.expect('COLON',':');
+      const body=[];
+      while(!this.check('PATH')&&!this.check('OTHERWISE')&&!this.check('RB')&&!this.check('EOF'))
+        body.push(this.pStmt());
+      paths.push({val,body,l:this.cur().l});
+    }
+    let otherwise=null;
+    if(this.match('OTHERWISE')){ this.expect('COLON',':'); otherwise=[]; while(!this.check('RB')&&!this.check('EOF')) otherwise.push(this.pStmt()); }
+    this.expect('RB','}');
+    return {k:'Destiny',expr,paths,otherwise,l};
+  }
+
+  pChant(){
+    const l=this.expect('CHANT','chant').l;
+    const varName=this.expect('ID','variável').v;
+    if(this.match('FROM')){
+      const start=this.pExpr();
+      this.expect('TO','to');
+      const end=this.pExpr();
+      let stepExpr=null;
+      if(this.match('STEP')) stepExpr=this.pExpr();
+      this.expect('LB','{'); const body=this.pStmtList(); this.expect('RB','}');
+      return {k:'ChantRange',var:varName,start,end,step:stepExpr,body,l};
+    }
+    this.expect('IN','in');
+    const coll=this.pExpr();
+    this.expect('LB','{'); const body=this.pStmtList(); this.expect('RB','}');
+    return {k:'ChantIn',var:varName,coll,body,l};
+  }
+
+  pSustain(){
+    const l=this.expect('SUSTAIN','sustain').l;
+    const cond=this.pExpr();
+    this.expect('LB','{'); const body=this.pStmtList(); this.expect('RB','}');
+    return {k:'Sustain',cond,body,l};
+  }
+
+  pInvoke(){
+    const l=this.expect('INVOKE','invoke').l;
+    this.expect('LB','{'); const body=this.pStmtList(); this.expect('RB','}');
+    this.expect('SUSTAIN','sustain');
+    const cond=this.pExpr();
+    this.expect('SEMI',';');
+    return {k:'Invoke',body,cond,l};
+  }
+
+  // ── EXPRESSÕES (precedência via Pratt-like) ──
+  pExpr(){ return this.pTernary(); }
+
+  pTernary(){
+    let e=this.pOr();
+    if(this.match('QUEST')){
+      const then=this.pExpr();
+      this.expect('COLON',':');
+      const els=this.pExpr();
+      e={k:'Ternary',cond:e,then,els,l:e.l};
+    }
+    return e;
+  }
+  pOr(){
+    let e=this.pAnd();
+    while(this.match('OR')) e={k:'Bin',op:'||',L:e,R:this.pAnd()};
+    return e;
+  }
+  pAnd(){
+    let e=this.pEq();
+    while(this.match('AND')) e={k:'Bin',op:'&&',L:e,R:this.pEq()};
+    return e;
+  }
+  pEq(){
+    let e=this.pRel();
+    while(true){
+      const op=this.match('EQ','NEQ');
+      if(!op) break;
+      e={k:'Bin',op:op.v,L:e,R:this.pRel()};
+    }
+    return e;
+  }
+  pRel(){
+    let e=this.pAdd();
+    while(true){
+      const op=this.match('LT','GT','LEQ','GEQ');
+      if(!op) break;
+      e={k:'Bin',op:op.v,L:e,R:this.pAdd()};
+    }
+    return e;
+  }
+  pAdd(){
+    let e=this.pMul();
+    while(true){
+      const op=this.match('PLUS','MINUS');
+      if(!op) break;
+      e={k:'Bin',op:op.v,L:e,R:this.pMul()};
+    }
+    return e;
+  }
+  pMul(){
+    let e=this.pUnary();
+    while(true){
+      const op=this.match('TIMES','SLASH','MOD');
+      if(!op) break;
+      e={k:'Bin',op:op.v,L:e,R:this.pUnary()};
+    }
+    return e;
+  }
+  pUnary(){
+    if(this.check('MINUS')){ const l=this.cur().l; this.i++; return {k:'Unary',op:'-',e:this.pUnary(),l}; }
+    if(this.check('NOT'))  { const l=this.cur().l; this.i++; return {k:'Unary',op:'!',e:this.pUnary(),l}; }
+    return this.pPostfix();
+  }
+  pPostfix(){
+    let e=this.pPrimary();
+    while(true){
+      if(this.check('DOT')){
+        this.i++;
+        const m=this.expect('ID','membro').v;
+        if(this.check('LP')){
+          this.i++;
+          const args=[];
+          while(!this.check('RP')&&!this.check('EOF')){ args.push(this.pExpr()); if(!this.match('COMMA'))break; }
+          this.expect('RP',')');
+          e={k:'MethodCall',obj:e,method:m,args,l:e.l};
+        } else {
+          e={k:'Member',obj:e,member:m,l:e.l};
+        }
+      } else if(this.check('LSQ')){
+        this.i++;
+        const idx=this.pExpr();
+        this.expect('RSQ',']');
+        e={k:'Index',obj:e,idx,l:e.l};
+      } else if(this.check('LP')){
+        this.i++;
+        const args=[];
+        while(!this.check('RP')&&!this.check('EOF')){ args.push(this.pExpr()); if(!this.match('COMMA'))break; }
+        this.expect('RP',')');
+        e={k:'Call',callee:e,args,l:e.l};
+      } else break;
+    }
+    return e;
+  }
+  pPrimary(){
+    const cur=this.cur(); const l=cur.l;
+    if(this.match('INT'))    return {k:'Lit',v:cur.v,l};
+    if(this.match('FLOAT'))  return {k:'Lit',v:cur.v,l};
+    if(this.match('FIXED'))  return {k:'Lit',v:cur.v[0]+cur.v[1]/100,l};
+    if(this.match('STRING')) return {k:'Lit',v:cur.v,l};
+    if(this.match('CHAR'))   return {k:'Lit',v:cur.v,l};
+    if(this.match('TRUE'))   return {k:'Lit',v:true,l};
+    if(this.match('FALSE'))  return {k:'Lit',v:false,l};
+    if(this.match('ID'))     return {k:'Var',name:cur.v,l};
+    if(this.check('LP')){
+      this.i++;
+      const e=this.pExpr();
+      this.expect('RP',')');
+      return e;
+    }
+    if(this.check('LSQ')){
+      this.i++;
+      const elems=[];
+      while(!this.check('RSQ')&&!this.check('EOF')){ elems.push(this.pExpr()); if(!this.match('COMMA'))break; }
+      this.expect('RSQ',']');
+      return {k:'ArrayInit',elems,l};
+    }
+    if(this.check('LB')){
+      this.i++;
+      const entries=[];
+      while(!this.check('RB')&&!this.check('EOF')){
+        const key=this.pExpr(); this.expect('COLON',':'); const val=this.pExpr();
+        entries.push({key,val});
+        if(!this.match('COMMA'))break;
+      }
+      this.expect('RB','}');
+      return {k:'CodexInit',entries,l};
+    }
+    throw SynErr(`expressão esperada, encontrado '${cur.v}'`,l);
+  }
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  INTERPRETADOR (tree-walker)
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+class Env {
+  constructor(parent=null){ this.vars=new Map(); this.parent=parent; }
+  get(name){
+    if(this.vars.has(name)) return this.vars.get(name);
+    if(this.parent) return this.parent.get(name);
+    return undefined;
+  }
+  set(name,val){
+    if(this.vars.has(name)){ this.vars.set(name,val); return; }
+    if(this.parent&&this.parent.has(name)){ this.parent.set(name,val); return; }
+    this.vars.set(name,val);
+  }
+  has(name){ return this.vars.has(name)||(this.parent?this.parent.has(name):false); }
+  def(name,val){ this.vars.set(name,val); }
+}
+
+class Interp {
+  constructor(stdinTokens){
+    this.out=[]; this.globals=new Env();
+    this.spells=new Map(); this.grimoires=new Map();
+    this.stdinQ=[...stdinTokens]; this.labels=new Map();
+  }
+
+  run(ast){
+    // 1ª passagem: registra grimoires e spells
+    for(const d of ast.decls){
+      if(d.k==='Grimoire') this.grimoires.set(d.name,d);
+      if(d.k==='Spell')    this.spells.set(d.name,d);
+    }
+    // executa ritual
+    this.execBlock(ast.ritual.body, this.globals);
+  }
+
+  execBlock(stmts, env){
+    let i=0;
+    while(i<stmts.length){
+      const s=stmts[i];
+      const r=this.execStmt(s,env,stmts,i);
+      if(r instanceof ReturnSignal||r instanceof BreakSignal||r instanceof ContinueSignal) return r;
+      i++;
+    }
+  }
+
+  execStmt(s,env,stmts,idx){
+    switch(s.k){
+      case 'Binding': {
+        const val=s.init?this.evalE(s.init,env):this.defaultVal(s.type);
+        env.def(s.name,val);
+        return;
+      }
+      case 'Assign': {
+        const val=this.evalE(s.val,env);
+        this.assign(s.target,val,env);
+        return;
+      }
+      case 'Reveal': {
+        const parts=s.args.map(a=>this.valToStr(this.evalE(a,env)));
+        this.out.push(parts.join('')); return;
+      }
+      case 'Divine': {
+        const raw=this.stdinQ.shift();
+        if(raw===undefined) throw RunErr(`divine: sem mais entrada no stdin`,s.l);
+        const n=Number(raw);
+        env.set(s.name, isNaN(n)?raw:n);
+        return;
+      }
+      case 'Foresee': {
+        const c=this.evalE(s.cond,env);
+        if(c){ const r=this.execBlock(s.then,new Env(env)); if(r) return r; }
+        else if(s.els){ const r=this.execBlock(s.els,new Env(env)); if(r) return r; }
+        return;
+      }
+      case 'Destiny': {
+        const val=this.evalE(s.expr,env);
+        let matched=false;
+        for(const p of s.paths){
+          if(this.evalE(p.val,env)===val||String(this.evalE(p.val,env))===String(val)){
+            matched=true;
+            const r=this.execBlock(p.body,new Env(env));
+            if(r instanceof BreakSignal) break;
+            if(r) return r;
+            break;
+          }
+        }
+        if(!matched&&s.otherwise){
+          const r=this.execBlock(s.otherwise,new Env(env));
+          if(r instanceof BreakSignal) return;
+          if(r) return r;
+        }
+        return;
+      }
+      case 'ChantRange': {
+        let cur=this.evalE(s.start,env);
+        const end=this.evalE(s.end,env);
+        const step=s.step?this.evalE(s.step,env):1;
+        while(cur<end){
+          const inner=new Env(env); inner.def(s.var,cur);
+          const r=this.execBlock(s.body,inner);
+          if(r instanceof BreakSignal) break;
+          if(r instanceof ContinueSignal){ cur+=step; continue; }
+          if(r instanceof ReturnSignal) return r;
+          cur+=step;
+        }
+        return;
+      }
+      case 'ChantIn': {
+        const coll=this.evalE(s.coll,env);
+        const items=Array.isArray(coll)?coll:(coll instanceof Map?[...coll.values()]:[]);
+        for(const item of items){
+          const inner=new Env(env); inner.def(s.var,item);
+          const r=this.execBlock(s.body,inner);
+          if(r instanceof BreakSignal) break;
+          if(r instanceof ContinueSignal) continue;
+          if(r instanceof ReturnSignal) return r;
+        }
+        return;
+      }
+      case 'Sustain': {
+        let iters=0;
+        while(this.evalE(s.cond,env)){
+          if(++iters>50000) throw RunErr('sustain: loop infinito (>50000 iterações)',s.l);
+          const r=this.execBlock(s.body,new Env(env));
+          if(r instanceof BreakSignal) break;
+          if(r instanceof ContinueSignal) continue;
+          if(r instanceof ReturnSignal) return r;
+        }
+        return;
+      }
+      case 'Invoke': {
+        let first=true, iters=0;
+        do {
+          if(++iters>50000) throw RunErr('invoke: loop infinito (>50000 iterações)',s.l);
+          const r=this.execBlock(s.body,new Env(env));
+          if(r instanceof BreakSignal) break;
+          if(r instanceof ContinueSignal) { first=false; continue; }
+          if(r instanceof ReturnSignal) return r;
+          first=false;
+        } while(this.evalE(s.cond,env));
+        return;
+      }
+      case 'Dispel':   return new BreakSignal();
+      case 'Recast':   return new ContinueSignal();
+      case 'Manifest': return new ReturnSignal(s.val?this.evalE(s.val,env):undefined);
+      case 'ExprStmt': this.evalE(s.expr,env); return;
+      case 'Label':    return; // labels ignoradas no interpretador (teleport não implementado)
+      case 'Teleport': return; // simplificado
+      default: throw RunErr(`statement desconhecido: ${s.k}`,s.l);
+    }
+  }
+
+  assign(target,val,env){
+    if(target.k==='Var'){ env.set(target.name,val); return; }
+    if(target.k==='Index'){
+      const arr=this.evalE(target.obj,env);
+      const idx=this.evalE(target.idx,env);
+      if(Array.isArray(arr)) arr[idx]=val;
+      else if(arr instanceof Map) arr.set(idx,val);
+      return;
+    }
+    if(target.k==='Member'){
+      const obj=this.evalE(target.obj,env);
+      if(obj&&typeof obj==='object') obj[target.member]=val;
+      return;
+    }
+  }
+
+  evalE(e,env){
+    switch(e.k){
+      case 'Lit':   return e.v;
+      case 'Var': {
+        if(!env.has(e.name)&&!this.spells.has(e.name))
+          throw RunErr(`'${e.name}' não declarado`,e.l);
+        const v=env.get(e.name);
+        return v!==undefined?v:this.spells.get(e.name);
+      }
+      case 'Bin': {
+        const left=this.evalE(e.L,env);
+        // short-circuit
+        if(e.op==='&&') return left&&this.evalE(e.R,env);
+        if(e.op==='||') return left||this.evalE(e.R,env);
+        const right=this.evalE(e.R,env);
+        switch(e.op){
+          case '+': return (typeof left==='string'||typeof right==='string')?String(left)+String(right):left+right;
+          case '-': return left-right; case '*': return left*right;
+          case '/': if(right===0) throw RunErr('divisão por zero',e.l||0); return Math.trunc(left/right);
+          case '%': return left%right;
+          case '==': return left===right||String(left)===String(right);
+          case '!=': return left!==right&&String(left)!==String(right);
+          case '<':  return left<right; case '>': return left>right;
+          case '<=': return left<=right; case '>=': return left>=right;
+        }
+        break;
+      }
+      case 'Unary': {
+        const v=this.evalE(e.e,env);
+        return e.op==='-'?-v:!v;
+      }
+      case 'Ternary': return this.evalE(e.cond,env)?this.evalE(e.then,env):this.evalE(e.els,env);
+      case 'Index': {
+        const obj=this.evalE(e.obj,env);
+        const idx=this.evalE(e.idx,env);
+        if(Array.isArray(obj)) return obj[idx];
+        if(obj instanceof Map) return obj.get(idx);
+        if(typeof obj==='string') return obj[idx];
+        return undefined;
+      }
+      case 'Member': {
+        const obj=this.evalE(e.obj,env);
+        if(obj&&typeof obj==='object') return obj[e.member];
+        return undefined;
+      }
+      case 'Call': {
+        const callee=this.evalE(e.callee,env);
+        const args=e.args.map(a=>this.evalE(a,env));
+        if(typeof callee==='function') return callee(...args);
+        // spell
+        const spellName=e.callee.k==='Var'?e.callee.name:null;
+        if(spellName&&this.spells.has(spellName)){
+          return this.callSpell(this.spells.get(spellName),args,null);
+        }
+        throw RunErr(`'${e.callee.name||'?'}' não é um spell`,e.l);
+      }
+      case 'MethodCall': {
+        const obj=this.evalE(e.obj,env);
+        const args=e.args.map(a=>this.evalE(a,env));
+        // método de grimoire
+        const gname=obj&&obj.__grimoire__;
+        if(gname&&this.grimoires.has(gname)){
+          const grim=this.grimoires.get(gname);
+          const sp=grim.spells.find(s=>s.name===e.method);
+          if(sp) return this.callSpell(sp,args,obj);
+        }
+        throw RunErr(`'${e.method}' não é um método`,e.l);
+      }
+      case 'ArrayInit': return e.elems.map(el=>this.evalE(el,env));
+      case 'CodexInit': {
+        const m=new Map();
+        for(const en of e.entries) m.set(this.evalE(en.key,env),this.evalE(en.val,env));
+        return m;
+      }
+      default: throw RunErr(`expressão desconhecida: ${e.k}`,e.l||0);
+    }
+  }
+
+  callSpell(sp,args,self){
+    const env=new Env(this.globals);
+    if(self) env.def('self',self);
+    for(let i=0;i<sp.params.length;i++) env.def(sp.params[i].name,args[i]??null);
+    const r=this.execBlock(sp.body,env);
+    if(r instanceof ReturnSignal) return r.v;
+    return undefined;
+  }
+
+  defaultVal(type){
+    if(!type) return null;
+    switch(type.k){
+      case 'PrimType':
+        return {essence:0,aether:0.0,crystal:0.0,fate:false,glyph:'\0',incantation:''}[type.name]??0;
+      case 'InvType': case 'SigType': case 'RlmType': return [];
+      case 'CodType': return new Map();
+      case 'NamedType': {
+        if(this.grimoires.has(type.name)){
+          const g=this.grimoires.get(type.name);
+          const obj={__grimoire__:type.name};
+          for(const f of g.fields) obj[f.name]=this.defaultVal(f.type);
+          return obj;
+        }
+        return null;
+      }
+      default: return null;
+    }
+  }
+
+  valToStr(v){
+    if(v===null||v===undefined) return 'null';
+    if(typeof v==='boolean') return v?'1':'0';
+    if(Array.isArray(v)) return '['+v.map(x=>this.valToStr(x)).join(', ')+']';
+    if(v instanceof Map) return '{'+[...v.entries()].map(([k,vv])=>this.valToStr(k)+':'+this.valToStr(vv)).join(', ')+'}';
+    return String(v);
+  }
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+//  API PÚBLICA
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+global.Arcana = {
+  run(source, stdinText=''){
+    try {
+      const toks   = lex(source);
+      const parser = new Parser(toks);
+      const ast    = parser.parse();
+      const stdin  = stdinText.trim().split(/\s+/).filter(Boolean);
+      const interp = new Interp(stdin);
+      interp.run(ast);
+      return { ok:true, output:interp.out, erro:'' };
+    } catch(e) {
+      return { ok:false, output:[], erro: e.message||String(e) };
+    }
+  },
+  tokens(source){
+    try {
+      return lex(source).map(t=>`${String(t.l).padStart(3,' ')}  ${t.t.padEnd(12,' ')}  ${JSON.stringify(t.v)}`);
+    } catch(e) {
+      throw e;
+    }
+  }
+};
+})(window);
+</script>
+
+<!-- ══════════════════════════════════════════
+     CONTEÚDO DOCS + NAVEGAÇÃO + PLAYGROUND
+══════════════════════════════════════════ -->
+<script>
+(function(){
+"use strict";
+
+// ── Exemplos do hero ──
+const HERO =
+`# Feitiço de Fibonacci
+spell fib(n: essence) -> essence {
+    foresee n <= 1 { manifest n; }
+    manifest fib(n - 1) + fib(n - 2);
+}
+
+ritual {
+    chant i from 0 to 8 {
+        reveal("fib(", i, ") = ", fib(i));
+    }
+}`;
+
+const EXEMPLO_PADRAO =
+`# Feitiço de números primos
+spell ehPrimo(n: essence) -> fate {
+    foresee n < 2 { manifest false; }
+    binding i : essence = 2;
+    sustain i * i <= n {
+        foresee n % i == 0 { manifest false; }
+        i = i + 1;
+    }
+    manifest true;
+}
+
+ritual {
+    reveal("Primos de 1 a 30:");
+    chant n from 2 to 31 {
+        foresee ehPrimo(n) {
+            reveal(n);
+        }
+    }
+}`;
+
+// ── Documentação ──
+const DOCS = [
+  {
+    id:"intro", titulo:"🔮 Boas-vindas",
+    html: `<h3 class="runic text-2xl font-bold text-arcane mb-3">Bem-vindo à Arcana</h3>
+      <p class="text-lg leading-relaxed">A Arcana é uma linguagem imperativa de tipagem estática com temática de feitiçaria. Todo programa é uma sequência de declarações de <code>grimoire</code>s e <code>spell</code>s, seguida de um bloco <code>ritual</code> (o ponto de entrada). Comentários começam com <code>#</code> ou ficam entre <code>~( )~</code>. Cada comando termina com <code>;</code> e blocos ficam entre <code>{ }</code>.</p>`,
+    code: `# Olá, mundo arcano!\nritual {\n    reveal("Saudações, feiticeiro!");\n}`
+  },
+  {
+    id:"binding", titulo:"💎 Binding (variáveis)",
+    html: `<h3 class="runic text-xl font-bold text-arcane mb-3">Binding — vínculos mágicos</h3>
+      <p class="text-lg leading-relaxed">Variáveis são chamadas de <em>bindings</em> — o feiticeiro vincula um nome a uma essência. A declaração usa <code>binding nome : tipo = valor;</code>. A inicialização é opcional.</p>`,
+    code: `ritual {\n    binding nivel  : essence     = 42;\n    binding poder  : aether      = 9.5;\n    binding ativo  : fate        = true;\n    binding runa   : glyph       = 'A';\n    binding nome   : incantation = "Arcana";\n    reveal(nivel, " ", poder, " ", nome);\n}`
+  },
+  {
+    id:"tipos", titulo:"⚗️ Tipos primitivos",
+    html: `<h3 class="runic text-xl font-bold text-arcane mb-3">Os seis tipos primitivos</h3>
+      <table style="width:100%;font-size:14px;border-collapse:collapse">
+        <tr style="background:#e8d9ff"><th style="padding:6px;border:1px solid #c4a8e8;text-align:left">Arcana</th><th style="padding:6px;border:1px solid #c4a8e8">C gerado</th><th style="padding:6px;border:1px solid #c4a8e8;text-align:left">Significado</th></tr>
+        <tr><td style="padding:6px;border:1px solid #c4a8e8;font-family:monospace">essence</td><td style="padding:6px;border:1px solid #c4a8e8;text-align:center;font-family:monospace">long long</td><td style="padding:6px;border:1px solid #c4a8e8">Inteiro 64 bits</td></tr>
+        <tr style="background:#f0e6ff"><td style="padding:6px;border:1px solid #c4a8e8;font-family:monospace">aether</td><td style="padding:6px;border:1px solid #c4a8e8;text-align:center;font-family:monospace">double</td><td style="padding:6px;border:1px solid #c4a8e8">Ponto flutuante</td></tr>
+        <tr><td style="padding:6px;border:1px solid #c4a8e8;font-family:monospace">crystal</td><td style="padding:6px;border:1px solid #c4a8e8;text-align:center;font-family:monospace">double</td><td style="padding:6px;border:1px solid #c4a8e8">Ponto fixo</td></tr>
+        <tr style="background:#f0e6ff"><td style="padding:6px;border:1px solid #c4a8e8;font-family:monospace">fate</td><td style="padding:6px;border:1px solid #c4a8e8;text-align:center;font-family:monospace">int</td><td style="padding:6px;border:1px solid #c4a8e8">Booleano</td></tr>
+        <tr><td style="padding:6px;border:1px solid #c4a8e8;font-family:monospace">glyph</td><td style="padding:6px;border:1px solid #c4a8e8;text-align:center;font-family:monospace">char</td><td style="padding:6px;border:1px solid #c4a8e8">Caractere</td></tr>
+        <tr style="background:#f0e6ff"><td style="padding:6px;border:1px solid #c4a8e8;font-family:monospace">incantation</td><td style="padding:6px;border:1px solid #c4a8e8;text-align:center;font-family:monospace">char[]</td><td style="padding:6px;border:1px solid #c4a8e8">String</td></tr>
+      </table>`,
+    code: `ritual {\n    binding x : essence = 2 + 3 * 4;\n    binding y : aether  = 1.5 * x;\n    binding b : fate    = x > 10;\n    reveal(x, " ", y, " ", b);\n}`
+  },
+  {
+    id:"foresee", titulo:"🔭 Foresee (if/else)",
+    html: `<h3 class="runic text-xl font-bold text-arcane mb-3">Foresee / Elsewise</h3>
+      <p class="text-lg leading-relaxed"><code>foresee</code> = if · <code>elsewise</code> = else. O feiticeiro <em>adivinha</em> o futuro para tomar uma decisão.</p>`,
+    code: `ritual {\n    binding x : essence = 7;\n    foresee x > 10 {\n        reveal("grande");\n    } elsewise foresee x > 5 {\n        reveal("medio");\n    } elsewise {\n        reveal("pequeno");\n    }\n}`
+  },
+  {
+    id:"destiny", titulo:"🎴 Destiny (switch)",
+    html: `<h3 class="runic text-xl font-bold text-arcane mb-3">Destiny / Path / Otherwise</h3>
+      <p class="text-lg leading-relaxed"><code>destiny</code> = switch · <code>path</code> = case · <code>otherwise</code> = default. O destino se ramifica em múltiplos caminhos.</p>`,
+    code: `ritual {\n    binding elemento : essence = 2;\n    destiny elemento {\n        path 1 : reveal("Fogo"); dispel;\n        path 2 : reveal("Agua"); dispel;\n        path 3 : reveal("Terra"); dispel;\n        otherwise: reveal("Arcano");\n    }\n}`
+  },
+  {
+    id:"chant", titulo:"🎵 Chant (for)",
+    html: `<h3 class="runic text-xl font-bold text-arcane mb-3">Chant — o cântico repetido</h3>
+      <p class="text-lg leading-relaxed"><code>chant i from 0 to N</code> = for loop com range. <code>chant item in collection</code> = foreach. O passo opcional usa <code>step</code>.</p>`,
+    code: `ritual {\n    # range\n    chant i from 1 to 6 {\n        reveal(i);\n    }\n    # foreach\n    binding feiticos : inventory[incantation] = ["Fireball","Blizzard"];\n    chant f in feiticos {\n        reveal("  -> ", f);\n    }\n}`
+  },
+  {
+    id:"sustain", titulo:"🌀 Sustain / Invoke (while)",
+    html: `<h3 class="runic text-xl font-bold text-arcane mb-3">Sustain / Invoke</h3>
+      <p class="text-lg leading-relaxed"><code>sustain cond { }</code> = while. <code>invoke { } sustain cond;</code> = do-while (executa ao menos uma vez).</p>`,
+    code: `ritual {\n    binding x : essence = 5;\n    sustain x > 0 {\n        reveal(x);\n        x = x - 1;\n    }\n    # do-while\n    binding y : essence = 0;\n    invoke {\n        y = y + 1;\n        reveal("y=", y);\n    } sustain y < 3;\n}`
+  },
+  {
+    id:"spell", titulo:"✨ Spell (função)",
+    html: `<h3 class="runic text-xl font-bold text-arcane mb-3">Spell — feitiço reutilizável</h3>
+      <p class="text-lg leading-relaxed">Funções são <code>spell</code>s. O retorno usa <code>manifest</code>. Spells podem ser recursivos.</p>`,
+    code: `spell fatorial(n: essence) -> essence {\n    foresee n <= 1 { manifest 1; }\n    manifest n * fatorial(n - 1);\n}\n\nritual {\n    chant i from 1 to 8 {\n        reveal(i, "! = ", fatorial(i));\n    }\n}`
+  },
+  {
+    id:"grimoire", titulo:"📚 Grimoire (struct)",
+    html: `<h3 class="runic text-xl font-bold text-arcane mb-3">Grimoire — tipo definido pelo programador</h3>
+      <p class="text-lg leading-relaxed"><code>grimoire</code> agrupa campos (<code>binding</code>) e métodos (<code>spell</code>). Equivale a uma struct com métodos em C.</p>`,
+    code: `grimoire Ponto {\n    binding x : essence;\n    binding y : essence;\n}\n\nritual {\n    binding p : Ponto;\n    p.x = 3;\n    p.y = 4;\n    binding dist : essence = p.x * p.x + p.y * p.y;\n    reveal("dist^2 = ", dist);\n}`
+  },
+  {
+    id:"colecoes", titulo:"🗃️ Coleções",
+    html: `<h3 class="runic text-xl font-bold text-arcane mb-3">inventory · sigils · realm · codex</h3>
+      <p class="text-lg leading-relaxed"><code>inventory[T]</code> = array 1D · <code>sigils[T]</code> = matriz 2D · <code>realm[T]</code> = 3D · <code>codex[K,V]</code> = mapa chave-valor.</p>`,
+    code: `ritual {\n    binding v : inventory[essence] = [10, 20, 30];\n    chant i from 0 to 3 {\n        reveal("v[", i, "] = ", v[i]);\n    }\n    binding mapa : codex[incantation, essence] = {\n        "ouro": 500,\n        "gemas": 12\n    };\n}`
+  },
+  {
+    id:"io", titulo:"📡 Reveal / Divine",
+    html: `<h3 class="runic text-xl font-bold text-arcane mb-3">Reveal (print) e Divine (scanf)</h3>
+      <p class="text-lg leading-relaxed"><code>reveal(args)</code> imprime argumentos na saída. <code>divine x;</code> lê da entrada padrão. No Grimório, coloque os valores na área de <em>Entrada (divine)</em>.</p>`,
+    code: `ritual {\n    binding a : essence;\n    binding b : essence;\n    divine a;\n    divine b;\n    reveal("Soma: ", a + b);\n    reveal("Produto: ", a * b);\n}`
+  },
+  {
+    id:"pipeline", titulo:"⚙️ O Pipeline",
+    html: `<h3 class="runic text-xl font-bold text-arcane mb-3">Como o compilador Python funciona</h3>
+      <ol class="text-lg leading-relaxed list-decimal pl-6 mt-2 space-y-1">
+        <li><b>Análise Léxica</b> — texto → tokens (expressões regulares + DFA, PLY lex)</li>
+        <li><b>Análise Sintática</b> — tokens → AST com 40 tipos de nó (gramática LALR(1), PLY yacc)</li>
+        <li><b>Análise Semântica</b> — AST → verificação de tipos e escopos (Visitor pattern)</li>
+        <li><b>Geração de Código C</b> — AST → código C com otimizações de peephole</li>
+        <li><b>Linking e Loading</b> — gcc compila o C em executável ELF nativo</li>
+      </ol>
+      <p class="text-lg mt-3">O <b>bônus de Assembly</b> gera código NASM x86-64 diretamente, que é montado com nasm + ld sem depender da libc.</p>`,
+    code: `# Use --tokens para ver os tokens\n# Use --ast para ver a AST\n# Use --only-c para ver o C gerado\n# python arcana_compile.py prog.arc --tokens\nritual {\n    binding x : essence = 6 * 7;\n    reveal(x);\n}`
+  },
+];
+
+// ── Navegação entre seções ──
+const secs = {
+  inicio: document.getElementById('sec-inicio'),
+  docs:   document.getElementById('sec-docs'),
+  play:   document.getElementById('sec-play'),
+};
+function showSec(name){
+  Object.entries(secs).forEach(([k,el])=> el.classList.toggle('hidden-sec', k!==name));
+  document.querySelectorAll('.nav-rune[data-sec]').forEach(b=>
+    b.classList.toggle('active', b.dataset.sec===name));
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+document.querySelectorAll('[data-sec]').forEach(b=>
+  b.addEventListener('click',()=>showSec(b.dataset.sec)));
+
+// Hero code
+document.getElementById('hero-code').textContent = HERO;
+
+// ── Docs ──
+const menu    = document.getElementById('doc-menu');
+const content = document.getElementById('doc-conteudo');
+
+function openDoc(d){
+  content.innerHTML =
+    d.html +
+    `<div class="grim p-3 mt-4"><code class="arc-code"></code></div>`;
+  content.querySelector('code.arc-code').textContent = d.code;
+  const btn = document.createElement('button');
+  btn.className = 'spell-btn btn-purple mt-4';
+  btn.textContent = '▶ Testar no Grimório';
+  btn.addEventListener('click',()=>{
+    document.getElementById('editor').value = d.code;
+    document.getElementById('stdin-area').value = '';
+    setOutput("<span class='c-dim'>Novo feitiço carregado. Clique em <b>Lançar Feitiço</b> para invocar. 🔮</span>");
+    showSec('play');
+  });
+  content.appendChild(btn);
+  menu.querySelectorAll('.nav-rune').forEach(x=>
+    x.classList.toggle('active', x.dataset.doc===d.id));
+}
+
+DOCS.forEach((d,i)=>{
+  const li=document.createElement('li');
+  const b=document.createElement('button');
+  b.className='nav-rune w-full text-left'+(i===0?' active':'');
+  b.textContent=d.titulo;
+  b.dataset.doc=d.id;
+  b.addEventListener('click',()=>openDoc(d));
+  li.appendChild(b); menu.appendChild(li);
+});
+openDoc(DOCS[0]);
+
+// ── Playground ──
+const editor    = document.getElementById('editor');
+const stdinArea = document.getElementById('stdin-area');
+const consoleEl = document.getElementById('console');
+editor.value    = EXEMPLO_PADRAO;
+
+const MANTRAS = [
+  "✨ O feitiço foi lançado com sucesso.",
+  "🔮 O cristal iluminou o resultado.",
+  "⭐ O ritual foi concluído sem falhas.",
+  "🌟 A magia fluiu perfeitamente.",
+];
+function mantra(){ return MANTRAS[Math.floor(Math.random()*MANTRAS.length)]; }
+
+function esc(s){ return String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+
+// ── Estado do painel de saída ──
+let tokensVisible = false;
+let lastOutputHTML = "<span class='c-dim'>O cristal aguarda um feitiço... clique em <b>Lançar Feitiço</b> para invocar. 🔮</span>";
+
+function setOutput(html){
+  lastOutputHTML = html;
+  consoleEl.innerHTML = html;
+  if(tokensVisible){ tokensVisible=false; updateTokenBtn(); }
+}
+
+function updateTokenBtn(){
+  const btn = document.getElementById('btn-tokens');
+  if(tokensVisible){
+    btn.textContent = '🙈 Esconder Tokens';
+  } else {
+    btn.textContent = '🔤 Ver Tokens';
+  }
+}
+
+function rodar(){
+  const r = window.Arcana.run(editor.value, stdinArea.value);
+  let html='';
+  if(r.output.length)
+    html += "<span class='c-ok'>"+esc(r.output.join('\n'))+"</span>\n";
+  if(r.ok){
+    if(!r.output.length) html="<span class='c-dim'>(sem saída)</span>\n";
+    html += "\n<span class='c-dim'>"+esc(mantra())+"</span>";
+  } else {
+    html += "\n<span class='c-err'>⚠️ O feitiço falhou:\n\n"+esc(r.erro)+"</span>";
+  }
+  setOutput(html);
+}
+
+function toggleTokens(){
+  if(tokensVisible){
+    // volta para a última saída normal
+    consoleEl.innerHTML = lastOutputHTML;
+    tokensVisible = false;
+    updateTokenBtn();
+    return;
+  }
+  // mostra tokens
+  try {
+    const toks = window.Arcana.tokens(editor.value);
+    consoleEl.innerHTML =
+      "<span class='c-dim'>🔤 Tokens (análise léxica):</span>\n"+
+      "<span class='c-tok'>"+esc(toks.join('\n'))+"</span>";
+    tokensVisible = true;
+    updateTokenBtn();
+  } catch(e){
+    consoleEl.innerHTML = "<span class='c-err'>⚠️ "+esc(e.message||String(e))+"</span>";
+  }
+}
+
+document.getElementById('btn-rodar').addEventListener('click', rodar);
+document.getElementById('btn-tokens').addEventListener('click', toggleTokens);
+document.getElementById('btn-exemplo').addEventListener('click',()=>{
+  editor.value=EXEMPLO_PADRAO;
+  setOutput("<span class='c-dim'>Exemplo recarregado. 🔮</span>");
+});
+document.getElementById('btn-limpar').addEventListener('click',()=>{
+  editor.value='';
+  stdinArea.value='';
+  setOutput("<span class='c-dim'>Editor e entrada limpos. Comece a conjurar! ✏️</span>");
+  editor.focus();
+});
+editor.addEventListener('keydown',e=>{
+  if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();rodar();}
+});
+})();
+</script>
+
+<!-- ══════════════════════════════════════════
+     FUNDO ESTRELADO
+══════════════════════════════════════════ -->
+<script>
+(function(){
+const bg=document.getElementById('stars-bg');
+if(!bg) return;
+const N=80;
+for(let i=0;i<N;i++){
+  const s=document.createElement('div');
+  s.className='star';
+  const size=Math.random()<0.15?3:Math.random()<0.4?2:1;
+  const delay=(Math.random()*6).toFixed(2);
+  const dur =(2+Math.random()*5).toFixed(2);
+  const opacity=(0.4+Math.random()*.6).toFixed(2);
+  s.style.cssText=`
+    width:${size}px;height:${size}px;
+    top:${(Math.random()*100).toFixed(2)}%;
+    left:${(Math.random()*100).toFixed(2)}%;
+    --d:${dur}s;--o:${opacity};
+    animation-delay:${delay}s;
+  `;
+  bg.appendChild(s);
+}
+})();
+</script>
+
+</body>
+</html>
